@@ -1,0 +1,11 @@
+THE SHADOWED ONE - version web
+==============================
+
+Para publicarla en tu subdominio:
+1) Sube TODO el contenido de esta carpeta (index.html y la carpeta Build) a la carpeta del subdominio
+   (en Hostinger: Administrador de archivos > public_html de ese subdominio).
+2) Abre el subdominio en el navegador. Listo.
+
+No hace falta configurar nada en el servidor (los archivos .gz se descomprimen en el navegador).
+Para probarlo en tu PC antes de subirlo NO sirve abrir index.html con doble clic:
+hace falta un servidor, por ejemplo:  python -m http.server 8000  (y abrir http://localhost:8000)

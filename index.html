@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#0b0614">
+    <title>The Shadowed One</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&display=swap" rel="stylesheet">
+    <style>
+      html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #0b0614;
+                   touch-action: none; -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; }
+      #unity-canvas { position: fixed; inset: 0; width: 100vw; height: 100vh; height: 100dvh; display: block; background: #0b0614; }
+      #carga { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
+               gap: 28px; background: radial-gradient(circle at 50% 40%, #2a1a45 0%, #0b0614 70%); color: #ffd440;
+               font-family: 'Luckiest Guy', system-ui, sans-serif; text-align: center; padding: 16px; box-sizing: border-box; }
+      #carga h1 { margin: 0; font-size: clamp(32px, 8vw, 72px); letter-spacing: 3px; text-shadow: 0 4px 0 #3a1a05; font-weight: normal; }
+      #ojos { font-size: 22px; letter-spacing: 18px; color: #ffe066; text-shadow: 0 0 12px #ffcc33; animation: parpadeo 3s infinite; }
+      @keyframes parpadeo { 0%, 92%, 100% { opacity: 1 } 95% { opacity: 0 } }
+      #barra { width: min(70vw, 420px); height: 18px; border: 3px solid #ffd440; border-radius: 12px; overflow: hidden; background: #1a0f2a; }
+      #relleno { width: 0%; height: 100%; background: linear-gradient(90deg, #ffb020, #ffe066); transition: width 0.2s; }
+      #texto { color: #fff; font-size: 18px; opacity: 0.85; }
+      #pantallaCompleta { position: fixed; top: 10px; left: 50%; transform: translateX(-50%); z-index: 5; display: none;
+                          font-family: 'Luckiest Guy', system-ui, sans-serif; font-size: 16px; color: #0b0614; background: #ffd440;
+                          border: none; border-radius: 20px; padding: 8px 18px; opacity: 0.85; }
+    </style>
+  </head>
+  <body>
+    <canvas id="unity-canvas" tabindex="-1"></canvas>
+    <div id="carga">
+      <h1>THE SHADOWED ONE</h1>
+      <div id="ojos">● ●</div>
+      <div id="barra"><div id="relleno"></div></div>
+      <div id="texto">Cargando la aventura...</div>
+    </div>
+    <button id="pantallaCompleta">PANTALLA COMPLETA</button>
+    <script src="Build/TheShadowedOne_Web.loader.js"></script>
+    <script>
+      var esMovil = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+      var canvas = document.querySelector("#unity-canvas");
+      var config = {
+        dataUrl: "Build/TheShadowedOne_Web.data.unityweb",
+        frameworkUrl: "Build/TheShadowedOne_Web.framework.js.unityweb",
+        codeUrl: "Build/TheShadowedOne_Web.wasm.unityweb",
+        streamingAssetsUrl: "StreamingAssets",
+        companyName: "Chaleco",
+        productName: "The Shadowed One",
+        productVersion: "1.0",
+      };
+      // en el telefono se dibuja a resolucion normal (no "retina"): el juego va mucho mas fluido
+      if (esMovil) config.devicePixelRatio = 1;
+
+      createUnityInstance(canvas, config, function (progreso) {
+        document.querySelector("#relleno").style.width = Math.round(progreso * 100) + "%";
+      }).then(function (instancia) {
+        document.querySelector("#carga").style.display = "none";
+        if (esMovil && document.documentElement.requestFullscreen) {
+          var b = document.querySelector("#pantallaCompleta");
+          b.style.display = "block";
+          b.onclick = function () {
+            document.documentElement.requestFullscreen().then(function () {
+              if (screen.orientation && screen.orientation.lock) screen.orientation.lock("landscape").catch(function () {});
+            }).catch(function () {});
+            b.style.display = "none";
+          };
+        }
+      }).catch(function (mensaje) {
+        document.querySelector("#texto").textContent = "No se pudo cargar el juego: " + mensaje;
+      });
+    </script>
+  </body>
+</html>
