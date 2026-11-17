@@ -25,6 +25,16 @@
       #pantallaCompleta { position: fixed; top: 10px; left: 50%; transform: translateX(-50%); z-index: 5; display: none;
                           font-family: 'Luckiest Guy', system-ui, sans-serif; font-size: 16px; color: #0b0614; background: #ffd440;
                           border: none; border-radius: 20px; padding: 8px 18px; opacity: 0.85; }
+      #elegir { position: fixed; inset: 0; z-index: 10; display: none; flex-direction: column; align-items: center; justify-content: center;
+                gap: 22px; background: radial-gradient(circle at 50% 40%, #2a1a45 0%, #0b0614 70%); color: #ffd440;
+                font-family: 'Luckiest Guy', system-ui, sans-serif; text-align: center; padding: 16px; box-sizing: border-box; }
+      #elegir h2 { margin: 0; font-size: clamp(24px, 5vw, 44px); font-weight: normal; letter-spacing: 2px; text-shadow: 0 3px 0 #3a1a05; }
+      #opciones { display: flex; flex-wrap: wrap; gap: 18px; justify-content: center; }
+      #opciones button { font-family: inherit; font-size: clamp(18px, 3vw, 26px); color: #0b0614; background: #ffd440; border: none;
+                         border-radius: 18px; padding: 18px 26px; min-width: 220px; cursor: pointer; box-shadow: 0 5px 0 #a8740a; }
+      #opciones button small { display: block; font-family: system-ui, sans-serif; font-size: 14px; margin-top: 6px; opacity: 0.8; }
+      #opciones button:active { transform: translateY(3px); box-shadow: 0 2px 0 #a8740a; }
+      #opciones button.sugerido { outline: 4px solid #fff; }
     </style>
   </head>
   <body>
@@ -34,6 +44,13 @@
       <div id="ojos">● ●</div>
       <div id="barra"><div id="relleno"></div></div>
       <div id="texto">Cargando la aventura...</div>
+    </div>
+    <div id="elegir">
+      <h2>¿CÓMO QUIERES JUGAR?</h2>
+      <div id="opciones">
+        <button id="modoBotones">📱 BOTONES EN PANTALLA<small>teléfono / tableta</small></button>
+        <button id="modoTeclado">⌨️ TECLADO<small>computadora (PC)</small></button>
+      </div>
     </div>
     <button id="pantallaCompleta">PANTALLA COMPLETA</button>
     <script src="Build/TheShadowedOne_Web.loader.js"></script>
@@ -56,6 +73,17 @@
         document.querySelector("#relleno").style.width = Math.round(progreso * 100) + "%";
       }).then(function (instancia) {
         document.querySelector("#carga").style.display = "none";
+        // el jugador elige: botones en pantalla (telefono) o teclado (PC). Se le avisa al juego (Web/ControlesTactiles.cs)
+        var elegir = document.querySelector("#elegir");
+        document.querySelector(esMovil ? "#modoBotones" : "#modoTeclado").className = "sugerido";
+        elegir.style.display = "flex";
+        function modo(m) {
+          instancia.SendMessage("ControlesTactiles", "ElegirModo", m);
+          elegir.style.display = "none";
+          canvas.focus();
+        }
+        document.querySelector("#modoBotones").onclick = function () { modo("botones"); };
+        document.querySelector("#modoTeclado").onclick = function () { modo("teclado"); };
         if (esMovil && document.documentElement.requestFullscreen) {
           var b = document.querySelector("#pantallaCompleta");
           b.style.display = "block";
