@@ -53,8 +53,19 @@
       #vitrina .propia { display: flex; align-items: center; justify-content: center; background: radial-gradient(circle, #fff1c2, #e8c87a);
                          color: #5a2a0a; font-size: clamp(18px, 2.6vw, 30px); line-height: 1.05; text-decoration: none; }
       #vitrina .sitio { display: block; margin-top: 6px; color: #ffe680; font-size: clamp(10px, 1.2vw, 13px); text-decoration: none; letter-spacing: .5px; }
-      @media (max-width: 640px), (max-height: 420px) { #vitrina { width: min(46vw, 260px); top: 8px; right: 8px; } }
-      @media (orientation: portrait) and (max-width: 640px) { #vitrina { left: 50%; right: auto; transform: translateX(-50%); width: 78vw; } }
+      /* telefono: mas chico y siempre dentro de la pantalla (respeta la camara/esquinas con safe-area) */
+      @media (max-width: 900px), (max-height: 500px) {
+        #vitrina { width: min(30vw, 190px); top: calc(6px + env(safe-area-inset-top)); right: calc(8px + env(safe-area-inset-right)); }
+        #vitrina .letrero { border-width: 4px; box-shadow: 0 0 0 2px #ffd440, 0 6px 14px rgba(0,0,0,.6); }
+        #vitrina .cinta { font-size: 11px; padding: 3px 9px 2px; margin-bottom: 5px; }
+        #vitrina .sitio { font-size: 9px; }
+        /* lo de la pantalla de carga baja un poco para no quedar debajo del letrero */
+        #carga, #elegir { padding-top: 118px; gap: 16px; }
+        #carga h1 { font-size: clamp(26px, 6vw, 48px); }
+      }
+      @media (orientation: portrait) and (max-width: 640px) {
+        #vitrina { left: 50%; right: auto; transform: translateX(-50%); width: min(60vw, 240px); }
+      }
     </style>
   </head>
   <body>
