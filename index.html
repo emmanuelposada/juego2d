@@ -35,6 +35,26 @@
       #opciones button small { display: block; font-family: system-ui, sans-serif; font-size: 14px; margin-top: 6px; opacity: 0.8; }
       #opciones button:active { transform: translateY(3px); box-shadow: 0 2px 0 #a8740a; }
       #opciones button.sugerido { outline: 4px solid #fff; }
+      /* VITRINA: carrusel de marcas arriba a la derecha mientras carga y al elegir como jugar */
+      #vitrina { position: fixed; top: 14px; right: 14px; z-index: 20; width: min(36vw, 340px); display: none;
+                 font-family: 'Luckiest Guy', system-ui, sans-serif; text-align: center; }
+      #vitrina .cinta { display: inline-block; background: #dc2a33; color: #fff; padding: 5px 14px 3px; border-radius: 99px;
+                        font-size: clamp(13px, 1.6vw, 18px); text-decoration: none; box-shadow: 0 3px 0 #7a141b;
+                        margin-bottom: 8px; animation: latido 1.6s infinite; }
+      @keyframes latido { 50% { transform: scale(1.08); } }
+      #vitrina .letrero { position: relative; aspect-ratio: 2 / 1; border: 6px solid #6b4a2b; border-radius: 10px; overflow: hidden;
+                          background: #000; box-shadow: 0 0 0 3px #ffd440, 0 10px 24px rgba(0,0,0,.6); }
+      #vitrina .letrero::after { content: ""; position: absolute; inset: 0; border-radius: 4px; pointer-events: none;
+                                 box-shadow: inset 0 0 0 3px #ffe680; animation: luces 1s steps(2) infinite; }
+      @keyframes luces { 50% { box-shadow: inset 0 0 0 3px #ff5a3c; } }
+      #vitrina img, #vitrina .propia { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0;
+                                       transform: translateX(10%); transition: opacity .6s, transform .6s; }
+      #vitrina .activa { opacity: 1; transform: none; }
+      #vitrina .propia { display: flex; align-items: center; justify-content: center; background: radial-gradient(circle, #fff1c2, #e8c87a);
+                         color: #5a2a0a; font-size: clamp(18px, 2.6vw, 30px); line-height: 1.05; text-decoration: none; }
+      #vitrina .sitio { display: block; margin-top: 6px; color: #ffe680; font-size: clamp(10px, 1.2vw, 13px); text-decoration: none; letter-spacing: .5px; }
+      @media (max-width: 640px), (max-height: 420px) { #vitrina { width: min(46vw, 260px); top: 8px; right: 8px; } }
+      @media (orientation: portrait) and (max-width: 640px) { #vitrina { left: 50%; right: auto; transform: translateX(-50%); width: 78vw; } }
     </style>
   </head>
   <body>
@@ -53,14 +73,48 @@
       </div>
     </div>
     <button id="pantallaCompleta">PANTALLA COMPLETA</button>
-    <script src="Build/TheShadowedOne_Web.loader.js"></script>
+    <div id="vitrina">
+      <a class="cinta" target="_blank" rel="noopener" href="https://arcade.especialidadinformatica.com/registro">¡ANÚNCIATE AQUÍ!</a>
+      <div class="letrero" id="letrero">
+        <a class="propia" target="_blank" rel="noopener" href="https://arcade.especialidadinformatica.com/">TU MARCA<br>AQUÍ</a>
+      </div>
+      <a class="sitio" target="_blank" rel="noopener" href="https://arcade.especialidadinformatica.com/">arcade.especialidadinformatica.com</a>
+    </div>
+    <script src="Build/web.loader.js"></script>
     <script>
       var esMovil = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
+      // VITRINA: anuncios activos del servidor de publicidad (si no hay internet queda "TU MARCA AQUI")
+      var vitrina = document.querySelector("#vitrina"), relojVitrina = null;
+      vitrina.style.display = "block";
+      (function () {
+        var letrero = document.querySelector("#letrero"), i = 0;
+        function mostrar(k) {
+          var d = letrero.children;
+          d[i].classList.remove("activa");
+          i = (k + d.length) % d.length;
+          d[i].classList.add("activa");
+        }
+        letrero.children[0].classList.add("activa");
+        fetch("https://arcade.especialidadinformatica.com/api/juego/vitrina").then(function (r) { return r.json(); }).then(function (j) {
+          (j.anuncios || []).forEach(function (a) {
+            var img = new Image();
+            img.alt = a.titulo; img.src = a.imagen;
+            letrero.insertBefore(img, letrero.lastElementChild);
+          });
+          if (letrero.children.length > 1) {
+            letrero.lastElementChild.classList.remove("activa"); // "tu marca aqui" queda para el final de la vuelta
+            i = 0;
+            mostrar(0);
+            relojVitrina = setInterval(function () { mostrar(i + 1); }, 4000);
+          }
+        }).catch(function () {});
+      })();
       var canvas = document.querySelector("#unity-canvas");
       var config = {
-        dataUrl: "Build/TheShadowedOne_Web.data.unityweb",
-        frameworkUrl: "Build/TheShadowedOne_Web.framework.js.unityweb",
-        codeUrl: "Build/TheShadowedOne_Web.wasm.unityweb",
+        dataUrl: "Build/web.data.unityweb",
+        frameworkUrl: "Build/web.framework.js.unityweb",
+        codeUrl: "Build/web.wasm.unityweb",
         streamingAssetsUrl: "StreamingAssets",
         companyName: "Chaleco",
         productName: "The Shadowed One",
@@ -80,6 +134,8 @@
         function modo(m) {
           instancia.SendMessage("ControlesTactiles", "ElegirModo", m);
           elegir.style.display = "none";
+          vitrina.style.display = "none"; // ya se juega: dentro del juego estan los letreros y el menu
+          if (relojVitrina) clearInterval(relojVitrina);
           canvas.focus();
         }
         document.querySelector("#modoBotones").onclick = function () { modo("botones"); };
